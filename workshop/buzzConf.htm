@@ -1,0 +1,140 @@
+<!doctype html>
+
+<head>
+	<script src="libs/aframe.js"></script>
+	<script src="https://dist.3d.io/3dio-js/1.x.x/3dio.min.js"></script>
+	<script src="https://unpkg.com/aframe-rain@1.0.2/build/aframe-rain.min.js"></script>
+</head>
+
+<a-scene rain>
+	
+	<a-assets>  
+        <img id="groundTexture" src="assets/grass1_0.png">
+		<img id="buzzConfTexture" src="assets/buzzconf.png">
+        <img id="skyTexture" src="https://cdn.aframe.io/a-painter/images/sky.jpg">
+		
+		<a-asset-item id="tree-obj" src="assets/tree.obj"></a-asset-item>
+		<a-asset-item id="tree-mtl" src="assets/tree.mtl"></a-asset-item>
+		
+		<a-asset-item id="tent-obj" src="assets/tent.obj"></a-asset-item>
+		<a-asset-item id="tent-mtl" src="assets/tent.mtl"></a-asset-item>
+		
+		<a-asset-item id="button-obj" src="assets/button.obj"></a-asset-item>
+		<a-asset-item id="button-mtl" src="assets/button.mtl"></a-asset-item>
+		
+		<a-asset-item id="robot-obj" src="assets/robot.obj"></a-asset-item>
+		<a-asset-item id="robot-mtl" src="assets/robot.mtl"></a-asset-item>
+		
+    </a-assets>
+	
+	<a-sound id="wind" src="src: url(assets/wind.wav)" autoplay="true"></a-sound>
+	<a-sound id="onButton" src="src: url(assets/on.mp3)" autoplay="false"></a-sound>
+	<a-sound id="buzzConf" src="src: url(assets/music.mp3)" autoplay="false"></a-sound>
+			 
+	<a-sky height="2048" radius="30" src="#skyTexture" theta-length="90" width="2048"></a-sky>
+	  
+	<a-entity obj-model="obj: #tree-obj; mtl: #tree-mtl" scale="0.28 0.35 0.29" position="-2 0 -5"></a-entity>
+	<a-entity obj-model="obj: #tree-obj; mtl: #tree-mtl" scale="0.24 0.21 0.19" position="-3.5 0 -2" rotation="0 90 0"></a-entity>
+	<a-entity obj-model="obj: #tree-obj; mtl: #tree-mtl" scale="0.4 0.35 0.39" position="-5.5 0 -6" rotation="0 170 0"></a-entity>
+	  
+	<a-entity obj-model="obj: #tent-obj; mtl: #tent-mtl" scale="2 2 2" position="2 0 -3" rotation="0 150 0"></a-entity>
+	<a-entity obj-model="obj: #tent-obj; mtl: #tent-mtl" scale="2 2 2" position="4 0 -1" rotation="0 120 0"></a-entity>
+	
+	<a-plane position="0 0 -4" rotation="-90 0 0" width="70" height="70" material="src: #groundTexture"></a-plane>
+	
+
+	<a-box 
+		start-buzzconf 
+  		width="2" 
+  		height="2" 
+  		depth="2" 
+  		material="transparent:true;"
+		position="-3 0 3" 
+  	>
+				
+		<a-entity id="button" obj-model="obj: #button-obj; mtl: #button-mtl" scale="2 2 2">
+		</a-entity>
+			
+		<a-animation 
+				attribute="position"
+				dur="1000"
+				begin="buttonPressed"			
+				from="-3 0 3"
+				to="-3 -0.5 3"
+		>
+		</a-animation>
+	
+	</a-box>
+
+	<a-entity id="robot" obj-model="obj: #robot-obj; mtl: #robot-mtl" scale="2 2 2" position="-3 -10 7" rotation="0 180 0">
+		<a-animation 
+			attribute="position"
+			dur="2000"
+			begin="buttonPressed"			
+			from="-3 -10 7"
+			to="-3 2 7"
+			>
+		</a-animation>
+	</a-entity>
+	
+	<a-box id="buzzConfCube" visible="false" position="0 10 0" rotation="0 45 0" width="6" height="6" depth="6" material="src: #buzzConfTexture">
+		<a-animation attribute="rotation" repeat="indefinite" to="0 360 0" dur="5000"></a-animation> 
+	</a-box>
+	
+	<a-entity id="light" light="type: point; intensity: 0.75; distance: 50; decay: 2; color: #fff" position="0 10 10"></a-entity>	  
+	  
+	<a-entity>
+		<a-camera>
+			<a-cursor color="#4CC3D9" fuse="true" timeout="10"></a-cursor>
+		</a-camera>		
+	</a-entity>
+	  
+</a-scene>
+
+ <script>
+ 
+	let buttonPressed=false;
+	
+    AFRAME.registerComponent('start-buzzconf', {  
+      schema: {default: ''},
+      init() {
+        this.el.addEventListener('click', () => { 
+          console.log('buttonSelected');
+		  
+		  //you can only press the button once
+		  if(buttonPressed) {
+			return;
+		  }
+		  
+		  //play button click sound
+		  document.querySelector('#onButton').components.sound.playSound();
+
+		  document.querySelector('#button').emit('buttonPressed');
+		  
+		  buttonPressed = true;
+		  
+		  //start robot animation
+		  document.querySelector('#robot').emit('buttonPressed');
+		  
+		  //do some stuff after animation finished
+		  setTimeout(()=> {		  
+			//create a brighter light
+			let light = document.createElement('a-entity');
+			light.setAttribute("light", "type: ambient; color: #ccc");
+			document.querySelector('a-scene').appendChild(light);
+			
+			//stop the howling wind and play buzzConf music
+			document.querySelector('#wind').pause();			
+			
+			//stop the rain
+			document.querySelector('a-scene').removeAttribute('rain');
+			
+			//show buzzconf cube
+			document.querySelector('#buzzConfCube').setAttribute("visible", true);
+			document.querySelector('#buzzConf').components.sound.playSound();			
+		  }, 2000);		
+        });
+      }
+    });
+  </script>
+

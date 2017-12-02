@@ -1,0 +1,22 @@
+<!doctype html>
+
+<head>
+	<script src="libs/aframe.js"></script>
+</head>
+
+
+<input type="button" id="myButton" value="Test" style="margin:50px; font-size: 20px;"></input>
+
+<a-scene>
+	<a-box id="myBox" position="0 1 -5" rotation="0 45 0" width="2" height="2" depth="2" color="#ff0000"></a-box>  
+</a-scene>
+
+<script>
+	var button=document.querySelector('#myButton');
+	
+	button.addEventListener('click', function() {
+		var scene = document.querySelector('a-scene'),
+		myBox = document.querySelector('#myBox');		
+		myBox.setAttribute('color', '#00ff00');
+	});
+</script>
